@@ -1,0 +1,7 @@
+youtube-downloader/
+├── app.py
+├── requirements.txt
+├── templates/
+│   └── index.html
+├── downloads/         ← thư mục chứa video tạm thời
+├── static/            ← (nếu có CSS tùy chỉnh)
