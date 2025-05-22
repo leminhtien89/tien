@@ -1,59 +1,64 @@
-from flask import Flask, render_template, request, send_file, redirect
-from pytube import YouTube
+
+from flask import Flask, render_template, request, jsonify, send_file
+from yt_dlp import YoutubeDL
 import os
 
 app = Flask(__name__)
-DOWNLOAD_FOLDER = "downloads"
-os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    video_info = None
-    formats = []
-    if request.method == 'POST':
-        url = request.form['url']
-        try:
-            yt = YouTube(url)
-            streams = yt.streams
-            video_info = {
-                'title': yt.title,
-                'thumbnail': yt.thumbnail_url,
-                'length': yt.length,
+@app.route('/', methods=['GET'])
+def home():
+    return render_template('index.html')
+
+@app.route('/get_formats', methods=['POST'])
+def get_formats():
+    url = request.form.get('url')
+    if not url:
+        return jsonify({'error': 'Missing URL'}), 400
+
+    ydl_opts = {
+        'quiet': True,
+        'skip_download': True,
+        'forcejson': True,
+    }
+
+    try:
+        with YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            formats = []
+            for f in info['formats']:
+                if f.get('filesize'):
+                    formats.append({
+                        'format_id': f['format_id'],
+                        'ext': f['ext'],
+                        'resolution': f.get('format_note') or f.get('resolution', 'audio'),
+                        'filesize': round(f['filesize'] / 1048576, 2)
+                    })
+            return jsonify({
+                'title': info.get('title'),
+                'thumbnail': info.get('thumbnail'),
+                'formats': formats,
                 'url': url
-            }
-            # Lọc định dạng video & audio
-            for s in streams.filter(progressive=True).order_by('resolution').desc():
-                filesize_mb = round(s.filesize / (1024 * 1024), 2) if s.filesize else None
-                formats.append({
-                    'itag': s.itag,
-                    'res': s.resolution or 'Audio',
-                    'mime': s.mime_type,
-                    'size': f"{filesize_mb} MB" if filesize_mb else "?"
-                })
-            # Thêm định dạng MP3
-            audio = streams.filter(only_audio=True).first()
-            if audio:
-                filesize_mb = round(audio.filesize / (1024 * 1024), 2) if audio.filesize else None
-                formats.append({
-                    'itag': audio.itag,
-                    'res': 'MP3',
-                    'mime': 'audio/mp4',
-                    'size': f"{filesize_mb} MB" if filesize_mb else "?"
-                })
-        except Exception as e:
-            return f"Lỗi: {str(e)}"
-    return render_template('index.html', video=video_info, formats=formats)
+            })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-@app.route('/download')
-def download_video():
+@app.route('/download', methods=['GET'])
+def download():
     url = request.args.get('url')
-    itag = request.args.get('itag')
-    if not url or not itag:
-        return redirect('/')
-    yt = YouTube(url)
-    stream = yt.streams.get_by_itag(itag)
-    filepath = stream.download(output_path=DOWNLOAD_FOLDER)
-    return send_file(filepath, as_attachment=True)
+    format_id = request.args.get('format_id')
+
+    ydl_opts = {
+        'format': format_id,
+        'outtmpl': 'downloads/%(title)s.%(ext)s'
+    }
+    try:
+        with YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            filename = ydl.prepare_filename(info)
+            return send_file(filename, as_attachment=True)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    os.makedirs('downloads', exist_ok=True)
+    app.run(debug=True, host='0.0.0.0')
