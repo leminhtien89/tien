@@ -1,3 +1,60 @@
+# 📥 YouTube Video Downloader bằng yt-dlp
+
+Đây là một ứng dụng web đơn giản giúp bạn tải video từ YouTube bằng thư viện `yt-dlp`, được xây dựng bằng Flask.
+
+---
+
+## 🛠 Hướng dẫn cài đặt
+
+### 1. Clone project từ GitHub
+```bash
 git clone https://github.com/leminhtien89/tien.git
 cd tien
+```
+
+### 2. (Tuỳ chọn) Tạo môi trường ảo
+```bash
+python -m venv venv
+venv\Scripts\activate         # Windows
+# hoặc
+source venv/bin/activate      # macOS/Linux
+```
+
+### 3. Cài đặt thư viện phụ thuộc
+```bash
 pip install -r requirements.txt
+```
+
+---
+
+## 🚀 Chạy ứng dụng
+
+```bash
+python app.py
+```
+
+Sau đó mở trình duyệt và truy cập: [http://localhost:5000](http://localhost:5000)
+
+---
+
+## 💡 Lệnh Git thường dùng
+
+```bash
+git add requirements.txt
+git commit -m "Update requirements"
+git push
+```
+
+---
+
+## 📦 Dự án sử dụng
+
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) – tải video YouTube
+- [Flask](https://flask.palletsprojects.com/) – backend Python
+- HTML + CSS (có thể dùng Bootstrap hoặc tùy chỉnh)
+
+---
+
+## 📄 Giấy phép
+
+MIT License – sử dụng thoải mái cho cá nhân hoặc thương mại.
