@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Tải video YouTube</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #fff; }
+        h1 { color: #333; }
+        input[type="text"] {
+            width: 70%; padding: 10px; font-size: 16px; border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px 20px; background-color: #6dcf00; border: none;
+            color: white; font-weight: bold; cursor: pointer;
+        }
+        .video-box {
+            margin-top: 30px; padding: 20px; border: 1px solid #ddd; background: #f9f9f9;
+        }
+        img { width: 320px; display: block; margin-bottom: 10px; }
+        .format-button {
+            display: inline-block; margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tải video YouTube</h1>
+    <form method="POST">
+        <input type="text" name="url" placeholder="Dán link YouTube vào đây..." required>
+        <button type="submit">Tải về</button>
+    </form>
+
+    {% if video %}
+    <div class="video-box">
+        <h2>{{ video.title }}</h2>
+        <img src="{{ video.thumbnail }}" alt="Thumbnail">
+        <p>Thời lượng: {{ video.length }} giây</p>
+        <h3>Chọn định dạng để tải:</h3>
+        {% for f in formats %}
+            <div class="format-button">
+                <a href="/download?url={{ video.url }}&itag={{ f.itag }}">
+                    <button>{{ f.res }} ({{ f.mime.split('/')[1] }}) - {{ f.size }}</button>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</body>
+</html>
